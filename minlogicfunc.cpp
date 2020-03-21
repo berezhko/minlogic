@@ -14,25 +14,17 @@ namespace NLogic {
 
 class TLogicFunction;
 unsigned long long calcLogic(TLogicFunction);
-
 typedef vector<int> minterm_t;
-void printMinterm(const minterm_t &minterm)
-{
-    printf(" {");
-    for (const auto &element: minterm) {
-        printf("%c,", element+0x30);
-    }
-    printf("\b}");
-}
-
 
 // Получить бит в позиции числа
 int getBit(int bitpos, int num)
 {
-    int zerofirstbit = (num >> bitpos) << bitpos;
-    return (num - zerofirstbit) >> (bitpos - 1);
+    int zerofirstbits = (num >> bitpos) << bitpos;
+    return (num - zerofirstbits) >> (bitpos - 1);
 }
 
+// Конвертировать последовательность битов и uint
+// 1111 -> 15
 int seqbittoint(const minterm_t &seqbit)
 {
     int result = 0;
@@ -43,6 +35,8 @@ int seqbittoint(const minterm_t &seqbit)
     return result;
 }
 
+// Конвертировать uint в последовательность бит
+// 15 -> 1111
 minterm_t inttoseqbin(int number, int dem)
 {
     minterm_t result;
@@ -53,6 +47,7 @@ minterm_t inttoseqbin(int number, int dem)
     return result;
 }
 
+// Подсчет количества бит в числе
 int bitCount(int number)
 {
     int result = 0;
@@ -259,6 +254,26 @@ TLogicFunction minimize(minterm_t term, int dem)
     return result;
 }
 
+TLogicFunction cutduplicate(TLogicFunction f)
+{
+    set<minterm_t> good_minterms;
+    set<minterm_t> bad_minterms;
+    for (const auto & checked: f.getLogicTable()) {
+        TLogicSet s;
+        for (const auto & other: f.getLogicTable()) {
+            if (other != checked && bad_minterms.find(other) == bad_minterms.end()) {
+                s.addMinterm(other);
+            }
+        }
+        if (s.containsMinterm(checked) == false) {
+            good_minterms.insert(checked);
+        } else {
+            bad_minterms.insert(checked);
+        }
+    }
+    return {good_minterms};
+}
+
 } // NLogic
 
 
@@ -300,7 +315,7 @@ void printMinterm(const minterm_t &minterm)
 {
     printf(" {");
     for (const auto &element: minterm) {
-        printf("%c,", element+0x30);
+        printf("%c^", element+0x30);
     }
     printf("\b}");
 }
@@ -317,11 +332,6 @@ void printFormatResult(TLogicFunction f, int dem, int pos_not_main)
     for (const auto &minterm: f.getLogicTable())
         printMinterm(minterm);
     printf("\n");
-}
-
-void printFormatResult(TLogicFunction f, int dem)
-{
-    printFormatResult(f, dem, 1 << dem);
 }
 
 void printCountMinterms(map<minterm_t, int> elements)
@@ -356,36 +366,29 @@ vector<minterm_t> transperent(const vector<minterm_t> & table)
 
 int main(int argc, char **argv)
 {
-    vector<minterm_t> table;
-    NInOutput::readTrueTable(argv[1], table);
-    for(const auto & minterm: transperent(table)) {
-        int dem = NLogic::bitCount(minterm.size()-1)+1;
-        TLogicFunction f = NLogic::minimize(minterm, dem);
-        NInOutput::printFormatResult(f, dem, minterm.size());
+    using NLogic::cutduplicate;
+    using NLogic::minimize;
 
-        set<minterm_t> set_minterms;
-        for (const auto & checked: f.getLogicTable()) {
-            TLogicSet s;
-            for (const auto & other: f.getLogicTable()) {
-                if (other != checked)
-                    s.addMinterm(other);
-            }
-            if (s.containsMinterm(checked) == false) {
-                set_minterms.insert(checked);
-            }
-        }
-        TLogicFunction g {set_minterms};
-        NInOutput::printFormatResult(g, dem, minterm.size());
-        printf("===============\n");
-
+    if (argc < 2) {
+        return 1;
     }
 
-    /*
+    vector<minterm_t> table;
+    NInOutput::readTrueTable(argv[1], table);
+    map<minterm_t, int> all_elements;
+    for(const auto & minterm: transperent(table)) {
+        int dem = NLogic::bitCount(minterm.size()-1)+1;
+        TLogicFunction f = cutduplicate(minimize(minterm, dem));
+        NInOutput::printFormatResult(f, dem, minterm.size());
+
+        for (const auto &term: f.getLogicTable())
+            all_elements[term] += 1;
+    }
+
     if (argc > 2) {
         string param = argv[2];
         if (param == "-v" || param == "--verbose")
             NInOutput::printCountMinterms(all_elements);
     }
-    */
     return 0;
 }
