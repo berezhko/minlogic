@@ -364,6 +364,7 @@ vector<minterm_t> transperent(const vector<minterm_t> & table)
     return result;
 }
 
+// Главная функция
 int main(int argc, char **argv)
 {
     using NLogic::cutduplicate;
