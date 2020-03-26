@@ -141,6 +141,7 @@ private:
     static const int X = 'X'-0x30;
 };
 
+// Что-то с множеством значений функции
 class TLogicSet
 {
 public:
