@@ -57,6 +57,7 @@ int bitCount(int number)
     return result;
 }
 
+// Класс представляет функцию инициализирующуюся по табличе истинности
 class TLogicFunction
 {
 public:
