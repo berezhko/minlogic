@@ -284,7 +284,9 @@ using NLogic::TLogicSet;
 
 namespace NInOutput {
 
+//
 // программа чтения таблици истиности из файла
+//
 int readTrueTable(char *filename, vector<minterm_t> &table)
 {
     FILE *inputfile = fopen(filename, "r");
