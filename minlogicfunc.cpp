@@ -57,6 +57,7 @@ int bitCount(int number)
     return result;
 }
 
+// Класс представляет функцию инициализирующуюся по табличе истинности
 class TLogicFunction
 {
 public:
@@ -140,6 +141,7 @@ private:
     static const int X = 'X'-0x30;
 };
 
+// Что-то с множеством значений функции
 class TLogicSet
 {
 public:
